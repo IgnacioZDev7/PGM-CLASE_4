@@ -4,13 +4,13 @@ import { PanelLogin } from '../login-panel/login-panel';
 import { PanelUsuario } from '../user-panel/user-panel';
 
 @Component({
-  selector: 'app-visor-360', // Identificador del componente en la web
-  imports: [PanelLogin, PanelUsuario], // Importamos los paneles que creamos
+  selector: 'app-visor-360',
+  imports: [PanelLogin, PanelUsuario],
   templateUrl: './viewer-360.html',
   styleUrl: './viewer-360.scss',
 })
 export class Visor360 implements AfterViewInit {
-  // Referencia al contenedor del HTML donde Three.js dibujará el 3D
+  // ref al contenedor principal 
   @ViewChild('rendererContainer') contenedorRender!: ElementRef;
   
   // Instancias de nuestros componentes hijos para acceder a su lógica
@@ -43,17 +43,17 @@ export class Visor360 implements AfterViewInit {
 
   constructor() {}
 
-  // Se ejecuta una vez que Angular ha cargado la vista HTML
+  // se ejecuta al cargar la vista HTML
   ngAfterViewInit() {
-    this.iniciarMotor3D(); // Configuramos Three.js
-    this.animar(); // Iniciamos el bucle de dibujo
+    this.iniciarMotor3D(); // Configurar hree.js
+    this.animar(); //bucle de dibujo
   }
 
-  // Configuración inicial del mundo 3D
+  // Configuración de mundo 3D
   private iniciarMotor3D() {
-    this.escena = new THREE.Scene(); // Creamos la escena vacía
+    this.escena = new THREE.Scene(); // se crea una escena vacía
 
-    // Configuramos la cámara (ángulo de visión, aspecto, distancia mínima y máxima)
+    // se configura la cámara (ángulo de visión, aspecto, distancia mínima y máxima)
     this.camara = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -61,73 +61,73 @@ export class Visor360 implements AfterViewInit {
       1100
     );
 
-    // Añadimos iluminación premium al mundo
-    const luzAmbiental = new THREE.AmbientLight(0x404040, 2); // Luz general suave
+    // le pongo iluminación al mundo
+    const luzAmbiental = new THREE.AmbientLight(0x404040, 2); 
     this.escena.add(luzAmbiental);
 
-    const luzPuntual = new THREE.PointLight(0x00d4ff, 2, 100); // Luz azul de enfoque
+    const luzPuntual = new THREE.PointLight(0x00d4ff, 2, 100); 
     luzPuntual.position.set(2, 5, 2);
     this.escena.add(luzPuntual);
 
-    const luzBlanca = new THREE.PointLight(0xffffff, 1, 50); // Luz blanca de relleno
+    const luzBlanca = new THREE.PointLight(0xffffff, 1, 50); 
     luzBlanca.position.set(-5, -2, -5);
     this.escena.add(luzBlanca);
 
-    // Creamos la gran esfera que contiene la foto 360
+    // se crea la esfera que contiene la foto 360
     const geometriaFondo = new THREE.SphereGeometry(500, 60, 40);
-    geometriaFondo.scale(-1, 1, 1); // La invertimos para verla desde adentro
+    geometriaFondo.scale(-1, 1, 1); // se invierte para verla desde adentro
 
     const cargador = new THREE.TextureLoader();
-    // Cargamos la foto que subiste (PXL...) desde la carpeta /public
-    const texturaFondo = cargador.load('PXL_20250614_152137453.PHOTOSPHERE.jpg');
+    // se carga la foto desde la carpeta /public
+    const texturaFondo = cargador.load('PXL_20250614_152137453.PHOTOSPHERE.jpg');// la foto de mi proyecto anterior funciona mejor que unas de internet y generadas por ia
     const materialFondo = new THREE.MeshBasicMaterial({ map: texturaFondo });
 
     const mallaFondo = new THREE.Mesh(geometriaFondo, materialFondo);
-    this.escena.add(mallaFondo); // Ponemos el fondo en la escena
+    this.escena.add(mallaFondo); // se pone el fondo en la escena
 
     // Integramos el panel de login que diseñamos anteriormente
     const grupoLogin = this.componentePanelLogin.crearGrupoLogin();
-    grupoLogin.position.set(0, 0, -5); // Lo ponemos frente a la cámara
+    grupoLogin.position.set(0, 0, -5); // se pone frente a la cámara
     this.escena.add(grupoLogin);
 
     // Integramos el avatar de usuario
     const iconoUsuario = this.componentePanelUsuario.crearIconoUsuario();
-    iconoUsuario.position.set(0, 3.5, -4.5); // Lo ponemos arriba del login
+    iconoUsuario.position.set(0, 3.5, -4.5); // se pone arriba del login
     this.escena.add(iconoUsuario);
 
-    // Configuramos el renderizador (la "pantalla" que dibuja los píxeles)
+    // se configura el renderizador (la "pantalla" que dibuja los píxeles)
     this.renderizador = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderizador.setPixelRatio(window.devicePixelRatio);
     this.renderizador.setSize(window.innerWidth, window.innerHeight);
     
-    // Lo pegamos en el div de nuestro HTML
+    // se pega en el div de nuestro HTML
     const contenedor = this.contenedorRender.nativeElement;
     contenedor.appendChild(this.renderizador.domElement);
 
-    // Escuchamos los eventos del usuario (mouse, teclado, ventana)
+    // se escuchan los eventos del usuario (mouse, teclado, ventana)
     contenedor.addEventListener('pointerdown', this.alPresionarPuntero.bind(this));
     contenedor.addEventListener('wheel', this.alUsarRuedaMouse.bind(this));
     window.addEventListener('resize', this.alRedimensionarVentana.bind(this));
     contenedor.addEventListener('click', this.alHacerClic.bind(this));
   }
 
-  // Se ejecuta cuando el usuario hace clic con el mouse
+  // se ejecuta cuando el usuario hace clic con el mouse
   private alHacerClic() {
-    // Si estamos apuntando al botón de login, lanzamos la entrada
+    // si estamos apuntando al botón de login, lanzamos la entrada
     if (this.objetoIntersecado && this.objetoIntersecado.name === 'botonLogin') {
       alert('¡Acceso concedido! Bienvenido al portal Retail 360.');
       this.componentePanelLogin.alIniciarSesionExito();
     }
   }
 
-  // Ajusta el 3D si el usuario cambia el tamaño del navegador
+  // ajusta el 3D si el usuario cambia el tamaño del navegador
   private alRedimensionarVentana() {
     this.camara.aspect = window.innerWidth / window.innerHeight;
     this.camara.updateProjectionMatrix();
     this.renderizador.setSize(window.innerWidth, window.innerHeight);
   }
 
-  // Captura el inicio del arrastre de cámara
+  // captura el inicio del arrastre de cámara
   private alPresionarPuntero(evento: PointerEvent) {
     if (evento.isPrimary === false) return;
 
@@ -143,67 +143,66 @@ export class Visor360 implements AfterViewInit {
     document.addEventListener('pointerup', this.alSoltarPuntero.bind(this));
   }
 
-  // Bucle infinito para que la escena se mueva y reaccione
+  // bucle infinito para que la escena se mueva y reaccione
   private animar() {
     requestAnimationFrame(() => this.animar());
-    this.actualizar(); // Calculamos cambios
+    this.actualizar(); // calculamos cambios
   }
 
-  // Finaliza el arrastre de la cámara
+  // finaliza el arrastre de la cámara
   private alSoltarPuntero() {
     this.esInteractuando = false;
     document.removeEventListener('pointermove', this.alMoverPuntero);
     document.removeEventListener('pointerup', this.alSoltarPuntero);
   }
 
-  // Control del zoom mediante la rueda del mouse
+  // control del zoom mediante la rueda del mouse
   private alUsarRuedaMouse(evento: WheelEvent) {
     const fovActual = this.camara.fov + evento.deltaY * 0.05;
-    this.camara.fov = THREE.MathUtils.clamp(fovActual, 10, 75); // Limitamos el zoom
+    this.camara.fov = THREE.MathUtils.clamp(fovActual, 10, 75); // limitamos el zoom
     this.camara.updateProjectionMatrix();
   }
 
-  // Mueve la vista cuando el usuario arrastra el mouse
+  // mueve la vista cuando el usuario arrastra el mouse
   private alMoverPuntero(evento: PointerEvent) {
     if (evento.isPrimary === false) return;
     
-    // Actualizamos coordenadas para el Raycaster (detección de objetos)
+    // actualizamos coordenadas para el Raycaster (detección de objetos)
     this.mouse.x = (evento.clientX / window.innerWidth) * 2 - 1;
     this.mouse.y = -(evento.clientY / window.innerHeight) * 2 + 1;
 
-    // Si estamos haciendo clic y arrastrando, rotamos la cámara
+    // si estamos haciendo clic y arrastrando, rotamos la cámara
     if (this.esInteractuando) {
       this.longitud = (this.mouseXEnClick - evento.clientX) * 0.1 + this.longitudEnClick;
       this.latitud = (evento.clientY - this.mouseYEnClick) * 0.1 + this.latitudEnClick;
     }
   }
 
-  // Lógica de cálculo frame a frame
+  // lógica de cálculo frame a frame
   private actualizar() {
-    // Limitamos la cámara para que no dé la vuelta completa verticalmente
+    // limitamos la cámara para que no dé la vuelta completa verticalmente
     this.latitud = Math.max(-85, Math.min(85, this.latitud));
     this.phi = THREE.MathUtils.degToRad(90 - this.latitud);
     this.theta = THREE.MathUtils.degToRad(this.longitud);
 
-    // Calculamos hacia dónde mira la cámara en el espacio 3D
+    // calculamos hacia dónde mira la cámara en el espacio 3D
     const x = Math.sin(this.phi) * Math.cos(this.theta);
     const y = Math.cos(this.phi);
     const z = Math.sin(this.phi) * Math.sin(this.theta);
 
-    // Aplicamos un suavizado (Lerp) para que el movimiento sea elegante
+    // aplicamos un Lerp para que el movimiento sea elegante y se SUAVICE
     const objetivoMira = new THREE.Vector3(x, y, z);
     const direccionActual = this.camara.getWorldDirection(new THREE.Vector3()).add(this.camara.position);
     direccionActual.lerp(objetivoMira, 0.1); 
     this.camara.lookAt(direccionActual);
 
-    // Detectamos si el mouse está encima de algún botón (Hover)
+    // detecta si el mouse está encima de algún botón
     this.lanzadorRayos.setFromCamera(this.mouse, this.camara);
     const interacciones = this.lanzadorRayos.intersectObjects(this.escena.children, true);
 
     if (interacciones.length > 0) {
       const objetoActual = interacciones[0].object;
       if (this.objetoIntersecado !== objetoActual) {
-        // Si salimos de un objeto anterior, restauramos su escala y brillo
         if (this.objetoIntersecado) {
           this.objetoIntersecado.scale.copy(this.escalaOriginal);
           if ((this.objetoIntersecado as any).material.emissive) {
@@ -214,7 +213,6 @@ export class Visor360 implements AfterViewInit {
         this.objetoIntersecado = objetoActual;
         this.escalaOriginal.copy(this.objetoIntersecado.scale);
         
-        // Si entramos al botón de login, lo hacemos brillar y crecer
         if (this.objetoIntersecado.name === 'botonLogin') {
            this.objetoIntersecado.scale.set(1.1, 1.1, 1.1);
            if ((this.objetoIntersecado as any).material.emissive) {
@@ -223,7 +221,6 @@ export class Visor360 implements AfterViewInit {
         }
       }
     } else {
-      // Si el mouse no apunta a nada, restauramos el objeto que teníamos antes
       if (this.objetoIntersecado) {
         this.objetoIntersecado.scale.copy(this.escalaOriginal);
         if ((this.objetoIntersecado as any).material.emissive) {
@@ -233,7 +230,7 @@ export class Visor360 implements AfterViewInit {
       this.objetoIntersecado = null;
     }
 
-    // Dibujamos el frame final
+    // se dibuja el frame final
     this.renderizador.render(this.escena, this.camara);
   }
 }
