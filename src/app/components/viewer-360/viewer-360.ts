@@ -60,7 +60,7 @@ export class Viewer360 implements AfterViewInit, OnDestroy {
     geometry.scale(-1, 1, 1);
 
     const loader = new THREE.TextureLoader();
-    const texture = loader.load('background360.png'); // Cargado desde /public
+    const texture = loader.load('PXL_20250614_152137453.PHOTOSPHERE.jpg'); // Cargado desde /public
     const material = new THREE.MeshBasicMaterial({ map: texture });
 
     const mesh = new THREE.Mesh(geometry, material);

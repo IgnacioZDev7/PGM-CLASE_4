@@ -11,49 +11,64 @@ export class LoginPanel {
   public createLoginGroup(): THREE.Group {
     const group = new THREE.Group();
 
-    // Fondo del panel con efecto de vidrio (Glassmorphism)
-    const panelGeom = new THREE.PlaneGeometry(4.5, 6);
+    // Fondo del panel - Glassmorphism más oscuro para contraste
+    const panelGeom = new THREE.PlaneGeometry(4, 5.5);
     const panelMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
+      color: 0x111111,
       transparent: true,
-      opacity: 0.1,
-      roughness: 0.1,
+      opacity: 0.8,
+      roughness: 0.2,
       metalness: 0,
-      transmission: 0.9, // Efecto de vidrio real
-      thickness: 0.5,
+      transmission: 0.3, // Menos transparente para leer mejor en fondos claros
+      thickness: 1,
       ior: 1.5,
       side: THREE.DoubleSide
     });
     const panel = new THREE.Mesh(panelGeom, panelMat);
     group.add(panel);
 
-    // Título
-    const titleTex = this.createTextTexture('LOGIN RETAIL 360', 128);
-    const titleGeom = new THREE.PlaneGeometry(3, 0.5);
+    // Borde brillante (Neon)
+    const edges = new THREE.EdgesGeometry(panelGeom);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.5 });
+    const line = new THREE.LineSegments(edges, lineMat);
+    group.add(line);
+
+    // Título - Más compacto y elegante
+    const titleTex = this.createTextTexture('RETAIL 360', 100);
+    const titleGeom = new THREE.PlaneGeometry(3, 0.4);
     const titleMat = new THREE.MeshBasicMaterial({ map: titleTex, transparent: true });
     const titleMesh = new THREE.Mesh(titleGeom, titleMat);
-    titleMesh.position.y = 2;
+    titleMesh.position.y = 2.2;
     group.add(titleMesh);
 
+    // Subtítulo
+    const subTex = this.createTextTexture('Login Experience', 60, '#aaaaaa');
+    const subGeom = new THREE.PlaneGeometry(2, 0.2);
+    const subMat = new THREE.MeshBasicMaterial({ map: subTex, transparent: true });
+    const subMesh = new THREE.Mesh(subGeom, subMat);
+    subMesh.position.y = 1.8;
+    group.add(subMesh);
+
     // Campo de Usuario
-    const userField = this.createInputField('Usuario', -0.5);
+    const userField = this.createInputField('Usuario', 0.5);
     group.add(userField);
 
     // Campo de Password
-    const passField = this.createInputField('Password', -1.5);
+    const passField = this.createInputField('Password', -0.8);
     group.add(passField);
 
-    // Botón de Entrar - Estética Premium
-    const btnTex = this.createTextTexture('ENTRAR', 140, '#ffffff', '#00d4ff');
-    const btnGeom = new THREE.PlaneGeometry(2.5, 0.9);
+    // Botón de Entrar - Diseño más limpio
+    const btnTex = this.createTextTexture('INICIAR SESIÓN', 100, '#ffffff');
+    const btnGeom = new THREE.PlaneGeometry(3, 0.6);
     const btnMat = new THREE.MeshStandardMaterial({ 
-      map: btnTex, 
+      color: 0x00d4ff,
+      map: btnTex,
       transparent: true,
       emissive: 0x00d4ff,
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.3
     });
     const btnMesh = new THREE.Mesh(btnGeom, btnMat);
-    btnMesh.position.y = -3.2;
+    btnMesh.position.y = -2.2;
     btnMesh.name = 'loginButton';
     group.add(btnMesh);
 
@@ -63,20 +78,28 @@ export class LoginPanel {
   private createInputField(label: string, yPos: number): THREE.Group {
     const fieldGroup = new THREE.Group();
 
-    // Etiqueta
-    const labelTex = this.createTextTexture(label, 64);
-    const labelGeom = new THREE.PlaneGeometry(1.5, 0.3);
+    // Etiqueta - Alineada arriba a la izquierda
+    const labelTex = this.createTextTexture(label, 70, '#00d4ff');
+    const labelGeom = new THREE.PlaneGeometry(1.2, 0.25);
     const labelMat = new THREE.MeshBasicMaterial({ map: labelTex, transparent: true });
     const labelMesh = new THREE.Mesh(labelGeom, labelMat);
-    labelMesh.position.set(-1, yPos + 0.4, 0.01);
+    labelMesh.position.set(-1, yPos + 0.5, 0.01);
     fieldGroup.add(labelMesh);
 
-    // Caja de input
-    const boxGeom = new THREE.PlaneGeometry(3.5, 0.6);
-    const boxMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+    // Caja de input - Estilo minimalista
+    const boxGeom = new THREE.PlaneGeometry(3.2, 0.5);
+    // Borde inferior solamente
+    const boxMat = new THREE.MeshBasicMaterial({ color: 0x333333, transparent: true, opacity: 0.5 });
     const boxMesh = new THREE.Mesh(boxGeom, boxMat);
     boxMesh.position.y = yPos;
     fieldGroup.add(boxMesh);
+
+    // Línea de base brillante
+    const lineGeom = new THREE.PlaneGeometry(3.2, 0.02);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0x00d4ff });
+    const line = new THREE.Mesh(lineGeom, lineMat);
+    line.position.y = yPos - 0.25;
+    fieldGroup.add(line);
 
     return fieldGroup;
   }
@@ -84,7 +107,6 @@ export class LoginPanel {
   private createTextTexture(text: string, size: number, color: string = '#ffffff', bgColor: string = 'transparent'): THREE.CanvasTexture {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d')!;
-    // Doble resolución para nitidez
     canvas.width = 1024;
     canvas.height = 256;
 
@@ -94,22 +116,19 @@ export class LoginPanel {
       context.fill();
     }
 
-    context.font = `bold ${size}px 'Segoe UI', Arial, sans-serif`;
+    context.font = `italic 700 ${size}px 'Inter', system-ui, -apple-system, sans-serif`;
     context.fillStyle = color;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    context.shadowColor = 'rgba(0,0,0,0.5)';
-    context.shadowBlur = 10;
     context.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
-    texture.anisotropy = 16; // Mejorar calidad de filtrado
+    texture.anisotropy = 16;
     return texture;
   }
 
   public onLoginSuccess() {
     console.log('Login success animation triggered');
-    // Implementación de efectos visuales adicionales aquí
   }
 }
 

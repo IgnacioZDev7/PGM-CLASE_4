@@ -8,6 +8,9 @@ import * as THREE from 'three';
   styleUrl: './user-panel.scss',
 })
 export class UserPanel {
+
+// este componente es el que se encarga de manejar el panel de usuario
+
   public createUserIcon(): THREE.Group {
     const group = new THREE.Group();
 
@@ -41,5 +44,5 @@ export class UserPanel {
   }
 }
 
-// este componente es el que se encarga de manejar el panel de usuario
+
 
