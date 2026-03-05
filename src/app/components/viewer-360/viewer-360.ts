@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 
 @Component({
@@ -7,20 +7,31 @@ import * as THREE from 'three';
   templateUrl: './viewer-360.html',
   styleUrl: './viewer-360.scss',
 })
-
-// este es el componente principal para alojar el 3d
-//inicia la escena, la camara y el renderizador
-
-export class Viewer360 implements AfterViewInit {
+export class Viewer360 implements AfterViewInit, OnDestroy {
   @ViewChild('rendererContainer') rendererContainer!: ElementRef;
 
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
   private renderer!: THREE.WebGLRenderer;
 
+  // Navegación
+  private isUserInteracting = false;
+  private onPointerDownPointerX = 0;
+  private onPointerDownPointerY = 0;
+  private onPointerDownLon = 0;
+  private onPointerDownLat = 0;
+  private lon = 0;
+  private lat = 0;
+  private phi = 0;
+  private theta = 0;
+
   ngAfterViewInit() {
     this.initThree();
     this.animate();
+  }
+
+  ngOnDestroy() {
+    // Limpieza
   }
 
   private initThree() {
@@ -28,34 +39,85 @@ export class Viewer360 implements AfterViewInit {
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+      1,
+      1100
     );
-    this.camera.position.z = 5;
+
+    // Fondo 360
+    const geometry = new THREE.SphereGeometry(500, 60, 40);
+    geometry.scale(-1, 1, 1);
+
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('background360.png'); // Cargado desde /public
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(mesh);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.rendererContainer.nativeElement.appendChild(this.renderer.domElement);
 
-    // Luz básica
-    const light = new THREE.AmbientLight(0xffffff, 1);
-    this.scene.add(light);
+    // Interacción
+    const container = this.rendererContainer.nativeElement;
+    container.addEventListener('pointerdown', this.onPointerDown.bind(this));
+    container.addEventListener('wheel', this.onDocumentMouseWheel.bind(this));
 
-    // Cubo de prueba
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    this.scene.add(cube);
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+  }
 
-    window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+  private onWindowResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  private onPointerDown(event: PointerEvent) {
+    if (event.isPrimary === false) return;
+    this.isUserInteracting = true;
+    this.onPointerDownPointerX = event.clientX;
+    this.onPointerDownPointerY = event.clientY;
+    this.onPointerDownLon = this.lon;
+    this.onPointerDownLat = this.lat;
+
+    document.addEventListener('pointermove', this.onPointerMove.bind(this));
+    document.addEventListener('pointerup', this.onPointerUp.bind(this));
+  }
+
+  private onPointerMove(event: PointerEvent) {
+    if (event.isPrimary === false) return;
+    this.lon = (this.onPointerDownPointerX - event.clientX) * 0.1 + this.onPointerDownLon;
+    this.lat = (event.clientY - this.onPointerDownPointerY) * 0.1 + this.onPointerDownLat;
+  }
+
+  private onPointerUp() {
+    this.isUserInteracting = false;
+    document.removeEventListener('pointermove', this.onPointerMove);
+    document.removeEventListener('pointerup', this.onPointerUp);
+  }
+
+  private onDocumentMouseWheel(event: WheelEvent) {
+    const fov = this.camera.fov + event.deltaY * 0.05;
+    this.camera.fov = THREE.MathUtils.clamp(fov, 10, 75);
+    this.camera.updateProjectionMatrix();
   }
 
   private animate() {
     requestAnimationFrame(() => this.animate());
+    this.update();
+  }
+
+  private update() {
+    this.lat = Math.max(-85, Math.min(85, this.lat));
+    this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+    this.theta = THREE.MathUtils.degToRad(this.lon);
+
+    const x = Math.sin(this.phi) * Math.cos(this.theta);
+    const y = Math.cos(this.phi);
+    const z = Math.sin(this.phi) * Math.sin(this.theta);
+
+    this.camera.lookAt(x, y, z);
     this.renderer.render(this.scene, this.camera);
   }
 }
