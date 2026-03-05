@@ -41,11 +41,19 @@ export class Viewer360 implements AfterViewInit, OnDestroy {
   private initThree() {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      1,
-      1100
     );
+
+    // Luces Premium
+    const ambientLight = new THREE.AmbientLight(0x404040, 2); // Luz ambiental suave
+    this.scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0x00d4ff, 2, 100);
+    pointLight.position.set(2, 5, 2);
+    this.scene.add(pointLight);
+
+    const blueLight = new THREE.PointLight(0xffffff, 1, 50);
+    blueLight.position.set(-5, -2, -5);
+    this.scene.add(blueLight);
 
     // Fondo 360
     const geometry = new THREE.SphereGeometry(500, 60, 40);
@@ -76,9 +84,16 @@ export class Viewer360 implements AfterViewInit, OnDestroy {
     // Interacción
     const container = this.rendererContainer.nativeElement;
     container.addEventListener('pointerdown', this.onPointerDown.bind(this));
-    container.addEventListener('wheel', this.onDocumentMouseWheel.bind(this));
-
     window.addEventListener('resize', this.onWindowResize.bind(this));
+    container.addEventListener('click', this.onMouseClick.bind(this));
+  }
+
+  private onMouseClick() {
+    if (this.intersectedObject && this.intersectedObject.name === 'loginButton') {
+      alert('¡Acceso concedido! Bienvenido al portal Retail 360.');
+      // Simular transición/cambio de estado
+      this.loginPanelComponent.onLoginSuccess();
+    }
   }
 
   private onWindowResize() {

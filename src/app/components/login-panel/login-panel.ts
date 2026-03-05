@@ -91,6 +91,11 @@ export class LoginPanel {
     const texture = new THREE.CanvasTexture(canvas);
     return texture;
   }
+
+  public onLoginSuccess() {
+    console.log('Login success animation triggered');
+    // Implementación de efectos visuales adicionales aquí
+  }
 }
 
 // este componente es el que se encarga de manejar el login
