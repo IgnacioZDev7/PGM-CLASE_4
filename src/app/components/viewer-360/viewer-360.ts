@@ -9,6 +9,7 @@ import { PanelUsuario } from '../user-panel/user-panel';
   templateUrl: './viewer-360.html',
   styleUrl: './viewer-360.scss',
 })
+// este componente es el que se encarga de crear el mundo 360
 export class Visor360 implements AfterViewInit {
   // ref al contenedor principal 
   @ViewChild('rendererContainer') contenedorRender!: ElementRef;
