@@ -7,3 +7,7 @@ import { Component } from '@angular/core';
   styleUrl: './login-panel.scss',
 })
 export class LoginPanel {}
+
+// este componente es el que se encarga de manejar el login
+// tiene dos botones para iniciar sesion como usuario o como administrador
+

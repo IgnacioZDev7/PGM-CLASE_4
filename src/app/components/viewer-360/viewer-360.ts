@@ -7,6 +7,10 @@ import * as THREE from 'three';
   templateUrl: './viewer-360.html',
   styleUrl: './viewer-360.scss',
 })
+
+// este es el componente principal para alojar el 3d
+//inicia la escena, la camara y el renderizador
+
 export class Viewer360 implements AfterViewInit {
   @ViewChild('rendererContainer') rendererContainer!: ElementRef;
 
