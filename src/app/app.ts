@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Viewer360 } from './components/viewer-360/viewer-360';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Viewer360],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
