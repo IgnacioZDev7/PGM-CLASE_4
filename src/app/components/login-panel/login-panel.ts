@@ -11,12 +11,17 @@ export class LoginPanel {
   public createLoginGroup(): THREE.Group {
     const group = new THREE.Group();
 
-    // Fondo del panel
-    const panelGeom = new THREE.PlaneGeometry(4, 5);
-    const panelMat = new THREE.MeshBasicMaterial({
-      color: 0x000000,
+    // Fondo del panel con efecto de vidrio (Glassmorphism)
+    const panelGeom = new THREE.PlaneGeometry(4.5, 6);
+    const panelMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.1,
+      roughness: 0.1,
+      metalness: 0,
+      transmission: 0.9, // Efecto de vidrio real
+      thickness: 0.5,
+      ior: 1.5,
       side: THREE.DoubleSide
     });
     const panel = new THREE.Mesh(panelGeom, panelMat);
@@ -38,12 +43,17 @@ export class LoginPanel {
     const passField = this.createInputField('Password', -1.5);
     group.add(passField);
 
-    // Botón de Entrar
-    const btnTex = this.createTextTexture('ENTRAR', 128, '#ffffff', '#007bff');
-    const btnGeom = new THREE.PlaneGeometry(2, 0.8);
-    const btnMat = new THREE.MeshBasicMaterial({ map: btnTex, transparent: true });
+    // Botón de Entrar - Estética Premium
+    const btnTex = this.createTextTexture('ENTRAR', 140, '#ffffff', '#00d4ff');
+    const btnGeom = new THREE.PlaneGeometry(2.5, 0.9);
+    const btnMat = new THREE.MeshStandardMaterial({ 
+      map: btnTex, 
+      transparent: true,
+      emissive: 0x00d4ff,
+      emissiveIntensity: 0.2
+    });
     const btnMesh = new THREE.Mesh(btnGeom, btnMat);
-    btnMesh.position.y = -3;
+    btnMesh.position.y = -3.2;
     btnMesh.name = 'loginButton';
     group.add(btnMesh);
 
@@ -74,21 +84,26 @@ export class LoginPanel {
   private createTextTexture(text: string, size: number, color: string = '#ffffff', bgColor: string = 'transparent'): THREE.CanvasTexture {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d')!;
-    canvas.width = 512;
-    canvas.height = 128;
+    // Doble resolución para nitidez
+    canvas.width = 1024;
+    canvas.height = 256;
 
     if (bgColor !== 'transparent') {
       context.fillStyle = bgColor;
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.roundRect ? context.roundRect(0, 0, canvas.width, canvas.height, 20) : context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fill();
     }
 
-    context.font = `bold ${size}px Arial`;
+    context.font = `bold ${size}px 'Segoe UI', Arial, sans-serif`;
     context.fillStyle = color;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
+    context.shadowColor = 'rgba(0,0,0,0.5)';
+    context.shadowBlur = 10;
     context.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
+    texture.anisotropy = 16; // Mejorar calidad de filtrado
     return texture;
   }
 

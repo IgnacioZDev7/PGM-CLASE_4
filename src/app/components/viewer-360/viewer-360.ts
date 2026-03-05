@@ -128,7 +128,11 @@ export class Viewer360 implements AfterViewInit, OnDestroy {
     const y = Math.cos(this.phi);
     const z = Math.sin(this.phi) * Math.sin(this.theta);
 
-    this.camera.lookAt(x, y, z);
+    // Suavizado de cámara (Lerp)
+    const targetLookAt = new THREE.Vector3(x, y, z);
+    const currentLookAt = this.camera.getWorldDirection(new THREE.Vector3()).add(this.camera.position);
+    currentLookAt.lerp(targetLookAt, 0.1); // Suavizado
+    this.camera.lookAt(currentLookAt);
 
     // Raycasting para hover
     this.raycaster.setFromCamera(this.mouse, this.camera);
@@ -139,19 +143,28 @@ export class Viewer360 implements AfterViewInit, OnDestroy {
       if (this.intersectedObject !== firstObject) {
         if (this.intersectedObject) {
           this.intersectedObject.scale.copy(this.originalScale);
+          if ((this.intersectedObject as any).material.emissive) {
+            (this.intersectedObject as any).material.emissiveIntensity = 0.2;
+          }
         }
         
         this.intersectedObject = firstObject;
         this.originalScale.copy(this.intersectedObject.scale);
         
-        // Efecto Hover: Escalar
+        // Efecto Hover Premium
         if (this.intersectedObject.name === 'loginButton') {
            this.intersectedObject.scale.set(1.1, 1.1, 1.1);
+           if ((this.intersectedObject as any).material.emissive) {
+             (this.intersectedObject as any).material.emissiveIntensity = 1.0;
+           }
         }
       }
     } else {
       if (this.intersectedObject) {
         this.intersectedObject.scale.copy(this.originalScale);
+        if ((this.intersectedObject as any).material.emissive) {
+            (this.intersectedObject as any).material.emissiveIntensity = 0.2;
+          }
       }
       this.intersectedObject = null;
     }
